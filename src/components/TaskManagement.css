@@ -1,0 +1,761 @@
+/* タスク管理画面のスタイル */
+.task-management {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ローディング */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.loading-container .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e3e3e3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.loading-container p {
+  color: #666;
+  font-size: 14px;
+}
+
+/* ヘッダー */
+.management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.management-header h2 {
+  color: #333;
+  margin: 0;
+  font-size: 24px;
+}
+
+.task-summary {
+  display: flex;
+  gap: 16px;
+}
+
+.summary-item {
+  font-size: 14px;
+  color: #666;
+  background-color: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.create-button {
+  background-color: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.create-button:hover {
+  background-color: #5a67d8;
+}
+
+/* エラーメッセージ */
+.error-message {
+  background-color: #fef2f2;
+  color: #dc2626;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-error {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* フィルター */
+.filter-bar {
+  margin-bottom: 24px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-btn {
+  background-color: #f8f9fa;
+  color: #666;
+  border: 1px solid #e9ecef;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background-color: #e9ecef;
+}
+
+.filter-btn.active {
+  background-color: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* モーダル */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* フォーム */
+.task-form {
+  padding: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.cancel-button {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-button:hover {
+  background-color: #4b5563;
+}
+
+.submit-button {
+  background-color: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #5a67d8;
+}
+
+/* ユーザー選択 */
+.user-selection {
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  padding: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+}
+
+.user-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.user-checkbox:hover {
+  background-color: #e9ecef;
+}
+
+.user-checkbox input[type="checkbox"] {
+  margin-right: 8px;
+  width: auto;
+}
+
+.checkbox-label {
+  font-size: 14px;
+  color: #333;
+}
+
+.selected-users {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #dbeafe;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #1e40af;
+}
+
+.selected-users.warning {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+/* 担当者編集モーダル */
+.assign-edit-content {
+  padding: 20px;
+}
+
+.current-assignment,
+.new-assignment {
+  margin-bottom: 24px;
+}
+
+.current-assignment h4,
+.new-assignment h4 {
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #333;
+}
+
+.current-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.current-user-badge {
+  background-color: #e5e7eb;
+  color: #374151;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.no-assignment {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+/* タスク一覧 */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 8px;
+  color: #666;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.empty-subtext {
+  margin-top: 8px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* タスクカード */
+.task-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: all 0.2s;
+  border-left: 4px solid #e9ecef;
+}
+
+.task-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.task-card.overdue {
+  border-left-color: #ef4444;
+  background: linear-gradient(90deg, #fef2f2 0%, white 20%);
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.task-title-section {
+  flex: 1;
+}
+
+.task-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.task-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.task-type {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.type-daily {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.type-weekly {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.type-main {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+}
+
+.task-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-todo {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-progress {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-completed {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.overdue-badge {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.start-btn {
+  background-color: #22c55e;
+  color: white;
+}
+
+.start-btn:hover {
+  background-color: #16a34a;
+}
+
+.complete-btn {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.complete-btn:hover {
+  background-color: #2563eb;
+}
+
+.reopen-btn {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.reopen-btn:hover {
+  background-color: #d97706;
+}
+
+.edit-btn {
+  background-color: #8b5cf6;
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #7c3aed;
+}
+
+.delete-btn {
+  background-color: #ef4444;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #dc2626;
+}
+
+.action-btn.edit-btn {
+  background-color: #667eea;
+  color: white;
+}
+
+.action-btn.edit-btn:hover {
+  background-color: #5a67d8;
+}
+
+.task-description {
+  color: #666;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.task-assignment,
+.task-due-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.assignment-label,
+.due-date-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.assignment-value,
+.due-date-value {
+  color: #333;
+}
+
+.task-timestamps {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .task-management {
+    padding: 16px;
+  }
+  
+  .management-header {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  
+  .header-left {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .task-summary {
+    justify-content: center;
+  }
+  
+  .filter-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .task-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .task-actions {
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+  
+  .task-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* 担当者割り当て関連のスタイル */
+.task-assignment {
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-assignment:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.task-assignment.unassigned {
+  background-color: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.task-assignment.unassigned:hover {
+  background-color: #fde68a;
+  border-color: #d97706;
+}
+
+.edit-icon {
+  opacity: 0.6;
+  font-size: 12px;
+  transition: opacity 0.2s;
+}
+
+.task-assignment:hover .edit-icon {
+  opacity: 1;
+}
+
+.assignment-value {
+  font-weight: 500;
+}
+
+.task-assignment.unassigned .assignment-value {
+  color: #92400e;
+  font-style: italic;
+}
+
+/* 色選択フォーム */
+.color-selection {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.color-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.color-option:hover {
+  background-color: #f3f4f6;
+}
+
+.color-option input[type="radio"] {
+  display: none;
+}
+
+.color-option input[type="radio"]:checked + .color-preview {
+  border: 3px solid #667eea;
+  transform: scale(1.1);
+}
+
+.color-preview {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.color-label {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* タスク色のスタイル */
+.task-color-blue {
+  background: linear-gradient(135deg, #dbeafe 0%, #f0f9ff 100%) !important;
+  border-left-color: #3b82f6 !important;
+}
+
+.task-color-green {
+  background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%) !important;
+  border-left-color: #10b981 !important;
+}
+
+.task-color-purple {
+  background: linear-gradient(135deg, #f3e8ff 0%, #faf5ff 100%) !important;
+  border-left-color: #8b5cf6 !important;
+}
+
+.task-color-pink {
+  background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%) !important;
+  border-left-color: #ec4899 !important;
+}
+
+.task-color-orange {
+  background: linear-gradient(135deg, #fed7aa 0%, #fef3c7 100%) !important;
+  border-left-color: #f59e0b !important;
+}
+
