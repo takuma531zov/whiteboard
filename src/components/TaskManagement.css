@@ -359,14 +359,15 @@
   border-top: 1px solid #e9ecef;
 }
 
-/* タスク一覧 */
+/* タスク一覧 - グリッドレイアウト（1行4つ表示） */
 .task-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
 .empty-state {
+  grid-column: 1 / -1;
   text-align: center;
   padding: 60px 20px;
   background: white;
@@ -381,14 +382,15 @@
   opacity: 0.8;
 }
 
-/* タスクカード */
+/* タスクカード - コンパクト化 */
 .task-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  padding: 16px;
   transition: all 0.2s;
-  border-left: 4px solid #e9ecef;
+  border-left: 3px solid #e9ecef;
+  height: fit-content;
 }
 
 .task-card:hover {
@@ -757,5 +759,44 @@
 .task-color-orange {
   background: linear-gradient(135deg, #fed7aa 0%, #fef3c7 100%) !important;
   border-left-color: #f59e0b !important;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 1200px) {
+  .task-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .task-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .task-management {
+    padding: 16px;
+  }
+  
+  .task-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .management-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .header-left {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .task-summary {
+    justify-content: center;
+  }
 }
 

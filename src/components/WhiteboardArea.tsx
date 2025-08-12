@@ -110,12 +110,19 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
   };
 
   /**
-   * ユーザー別のタスクを取得
+   * ユーザー別のタスクを取得（最大10タスクまで）
    */
   const getTasksForUser = (userId: string) => {
-    return getCurrentTasks().filter(task =>
+    const tasks = getCurrentTasks().filter(task =>
       task.assignedUserIds && task.assignedUserIds.includes(userId)
     );
+    // 最大10タスクまで表示、優先度: 進行中 > 未着手 > 完了
+    return tasks
+      .sort((a, b) => {
+        const statusOrder = { 'in_progress': 0, 'todo': 1, 'completed': 2 };
+        return statusOrder[a.status] - statusOrder[b.status];
+      })
+      .slice(0, 10);
   };
 
   /**
@@ -211,9 +218,15 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
       </div>
 
       <div className="whiteboard-content">
-        {/* 出勤メンバー列 */}
+        {/* 出勤メンバー列（最大10人表示） */}
         <div className="member-columns">
-          {attendingUsers.map(user => (
+          {attendingUsers.slice(0, 10).map(user => {
+            const userTasks = getTasksForUser(user.id);
+            const allUserTasks = getCurrentTasks().filter(task =>
+              task.assignedUserIds && task.assignedUserIds.includes(user.id)
+            );
+            
+            return (
             <div
               key={user.id}
               className="member-column"
@@ -226,12 +239,13 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
                   <span className="member-id">ID: {user.employeeId}</span>
                 </div>
                 <span className="task-count">
-                  {getTasksForUser(user.id).length}件
+                  {userTasks.length}
+                  {allUserTasks.length > 10 && `/${allUserTasks.length}`}
                 </span>
               </div>
 
               <div className="member-tasks">
-                {getTasksForUser(user.id).map(task => (
+                {userTasks.map(task => (
                   <div
                     key={task.id}
                     className={`task-card ${getStatusClass(task.status)} ${isOverdue(task) ? 'overdue' : ''} ${getTaskColorClass(task.color)}`}
@@ -294,7 +308,8 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
                 ))}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* 未アサインタスク列 */}

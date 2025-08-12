@@ -64,20 +64,23 @@
   min-height: 500px;
 }
 
-/* メンバー列 */
+/* メンバー列 - コンパクト化、最大10人対応 */
 .member-columns {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   flex: 1;
   overflow-x: auto;
+  padding-bottom: 8px;
 }
 
 .member-column {
-  min-width: 280px;
+  min-width: 200px;
+  max-width: 220px;
+  flex: 0 0 200px;
   background: #f9fafb;
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  padding: 16px;
+  border: 1px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
   transition: all 0.2s;
 }
 
@@ -86,12 +89,13 @@
   background: #f3f4f6;
 }
 
+/* メンバーヘッダー - コンパクト化 */
 .member-column-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -99,47 +103,60 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .member-name {
   font-weight: 600;
   color: #111827;
-  font-size: 16px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .member-id {
-  font-size: 12px;
+  font-size: 10px;
   color: #6b7280;
   background: #e5e7eb;
-  padding: 2px 6px;
-  border-radius: 8px;
+  padding: 1px 4px;
+  border-radius: 6px;
   width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .task-count {
   background: #667eea;
   color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 10px;
+  font-size: 10px;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
-/* メンバータスク */
+/* メンバータスク - 最大10タスク表示対応 */
 .member-tasks {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-height: 200px;
+  gap: 6px;
+  min-height: 150px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-/* 未アサイン列 */
+/* 未アサイン列 - コンパクト化 */
 .unassigned-column {
-  min-width: 300px;
+  min-width: 220px;
+  max-width: 240px;
+  flex: 0 0 220px;
   background: #fef3c7;
-  border: 2px dashed #f59e0b;
-  border-radius: 12px;
-  padding: 16px;
+  border: 1px dashed #f59e0b;
+  border-radius: 8px;
+  padding: 12px;
   transition: all 0.2s;
 }
 
@@ -170,28 +187,33 @@
 .unassigned-tasks {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-height: 200px;
+  gap: 6px;
+  min-height: 150px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .no-unassigned-tasks {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 200px;
+  height: 150px;
   color: #d97706;
   font-style: italic;
+  font-size: 12px;
+  text-align: center;
 }
 
-/* タスクカード */
+/* タスクカード - コンパクト化 */
 .task-card {
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: 6px;
+  padding: 8px;
   cursor: grab;
   transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-size: 12px;
 }
 
 .task-card:hover {
@@ -223,26 +245,32 @@
 }
 
 .task-card-header {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .task-title {
-  margin: 0 0 6px 0;
-  font-size: 14px;
+  margin: 0 0 4px 0;
+  font-size: 12px;
   font-weight: 600;
   color: #111827;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .task-meta {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .task-status {
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 8px;
+  font-size: 9px;
   font-weight: 500;
 }
 
@@ -264,9 +292,9 @@
 .overdue-badge {
   background: #fee2e2;
   color: #dc2626;
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 8px;
+  font-size: 9px;
   font-weight: 500;
   animation: pulse-red 2s infinite;
 }
@@ -277,19 +305,23 @@
 }
 
 .task-description {
-  font-size: 12px;
+  font-size: 10px;
   color: #6b7280;
-  margin: 8px 0;
-  line-height: 1.4;
+  margin: 4px 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .task-due-date {
-  font-size: 11px;
+  font-size: 9px;
   color: #d97706;
   background: #fef3c7;
-  padding: 2px 6px;
-  border-radius: 8px;
-  margin: 8px 0;
+  padding: 1px 4px;
+  border-radius: 6px;
+  margin: 4px 0;
   width: fit-content;
 }
 
