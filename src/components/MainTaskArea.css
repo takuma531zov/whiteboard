@@ -1,9 +1,11 @@
 /* メインタスク専用枠のスタイル - コンパクト化 */
 .main-task-area {
   background: white;
-  border-bottom: 2px solid #667eea;
+  border-bottom: 1px solid #e2e8f0;
   padding: 12px 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 10;
 }
 
 .main-task-header {

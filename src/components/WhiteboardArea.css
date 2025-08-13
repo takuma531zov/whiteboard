@@ -1,9 +1,10 @@
 /* ホワイトボード領域のスタイル */
 .whiteboard-area {
   flex: 1;
-  padding: 20px;
+  padding: 16px;
   background: white;
   min-height: 400px;
+  position: relative;
 }
 
 .whiteboard-header {
