@@ -200,6 +200,7 @@
   min-height: 150px;
   overflow-y: auto;
   flex-grow: 1;
+  padding-right: 10px; /* スクロールバーの干渉を防ぐ */
 }
 
 .no-unassigned-tasks {
