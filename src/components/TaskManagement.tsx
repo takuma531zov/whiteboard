@@ -330,6 +330,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({
         color: formData.color !== 'default' ? formData.color : undefined
       };
 
+      
       await FirestoreService.createTask(taskData);
       
       // リアルタイム購読がタスクの追加を自動で反映するため、

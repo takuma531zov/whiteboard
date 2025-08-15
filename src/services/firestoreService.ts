@@ -286,7 +286,8 @@ export class FirestoreService {
   static async createTask(taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     try {
       const tasksRef = collection(db, 'tasks');
-      const docRef = await addDoc(tasksRef, {
+      
+      const firestoreData = {
         ...taskData,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -296,7 +297,14 @@ export class FirestoreService {
         workEndTime: taskData.workEndTime ? Timestamp.fromDate(taskData.workEndTime) : null,
         // assignedUserIds フィールドを明示的に保存
         assignedUserIds: taskData.assignedUserIds || []
-      });
+      };
+
+      // undefinedフィールドを除外（Firestoreはundefinedをサポートしていない）
+      const cleanedData = Object.fromEntries(
+        Object.entries(firestoreData).filter(([_, value]) => value !== undefined)
+      );
+      
+      const docRef = await addDoc(tasksRef, cleanedData);
       
       return docRef.id;
       
