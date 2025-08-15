@@ -6,8 +6,10 @@ import { TaskManagement } from './components/TaskManagement';
 import { WhiteboardMain } from './components/WhiteboardMain';
 import { AttendanceTracker } from './components/AttendanceTracker';
 import { MasterDataManagement } from './components/MasterDataManagement';
+import { PersonalTasks } from './components/PersonalTasks';
 import { AuthService } from './services/authService';
-import { User, LoginFormData } from './types';
+import { FirestoreService } from './services/firestoreService';
+import { User, LoginFormData, Task } from './types';
 import { debugFirebaseConfig } from './utils/debugFirebase';
 import { initializeMasterData } from './utils/initMasterData';
 import './utils/manualTest'; // 手動テスト関数をロード
@@ -24,7 +26,10 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState<'main' | 'members' | 'tasks' | 'whiteboard' | 'attendance' | 'masterdata'>('whiteboard');
+  const [currentPage, setCurrentPage] = useState<'main' | 'members' | 'tasks' | 'whiteboard' | 'attendance' | 'masterdata' | 'personal'>('whiteboard');
+  
+  // タスクデータ（個人ページ用）
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
 
   /**
    * 認証状態の初期化と監視
@@ -43,9 +48,20 @@ function App() {
         // ログイン済みの場合、Firestoreからユーザーデータを取得
         const userData = await AuthService.getUserData(user.uid);
         setCurrentUser(userData);
+        
+        // タスクデータの購読を開始
+        const unsubscribeTasks = FirestoreService.subscribeToTasks((updatedTasks) => {
+          setAllTasks(updatedTasks);
+        });
+        
+        // クリーンアップ関数を保存（ログアウト時に呼び出し）
+        return () => {
+          unsubscribeTasks();
+        };
       } else {
         // ログアウト状態
         setCurrentUser(null);
+        setAllTasks([]);
       }
       
       setIsLoading(false);
@@ -88,6 +104,17 @@ function App() {
     }
   };
 
+  /**
+   * タスクステータス更新処理（個人ページ用）
+   */
+  const handleUpdateTaskStatus = async (taskId: string, status: Task['status']) => {
+    try {
+      await FirestoreService.updateTask(taskId, { status });
+    } catch (error: any) {
+      console.error('タスクステータス更新エラー:', error);
+    }
+  };
+
   // 初期ローディング表示
   if (isLoading) {
     return (
@@ -124,6 +151,14 @@ function App() {
         return <AttendanceTracker currentUser={currentUser} firebaseUser={firebaseUser} />;
       case 'masterdata':
         return <MasterDataManagement />;
+      case 'personal':
+        return (
+          <PersonalTasks
+            currentUser={currentUser}
+            allTasks={allTasks}
+            onUpdateTaskStatus={handleUpdateTaskStatus}
+          />
+        );
       default:
         return (
           <div className="welcome-message">
@@ -141,6 +176,10 @@ function App() {
               <div className="feature-card" onClick={() => setCurrentPage('tasks')}>
                 <h3>📋 タスク管理</h3>
                 <p>日時・週次・メインタスクの作成と管理</p>
+              </div>
+              <div className="feature-card" onClick={() => setCurrentPage('personal')}>
+                <h3>👤 個人タスク</h3>
+                <p>自分のタスクを一覧で確認・管理</p>
               </div>
               <div className="feature-card" onClick={() => setCurrentPage('attendance')}>
                 <h3>🕰️ 出退勤打刻</h3>
@@ -178,6 +217,12 @@ function App() {
               className={currentPage === 'tasks' ? 'nav-button active' : 'nav-button'}
             >
               📋 タスク管理
+            </button>
+            <button 
+              onClick={() => setCurrentPage('personal')}
+              className={currentPage === 'personal' ? 'nav-button active' : 'nav-button'}
+            >
+              👤 個人タスク
             </button>
             <button 
               onClick={() => setCurrentPage('attendance')}
