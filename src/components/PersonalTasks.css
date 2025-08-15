@@ -371,6 +371,42 @@
   border-left-color: #f59e0b !important;
 }
 
+/* 優先度ボタン */
+.task-actions .priority-btn {
+  background-color: transparent;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  margin-right: auto; /* 他のアクションボタンから離して左に配置 */
+  flex-grow: 0; /* 他のボタンと幅を一緒にしない */
+  min-width: auto;
+}
+
+.task-actions .priority-btn:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.task-actions .priority-btn.active {
+  background-color: #fffbeb;
+  border-color: #f59e0b;
+  color: #92400e;
+  font-weight: 600;
+}
+
+/* 優先タスクのカードスタイル */
+.personal-task-card.priority {
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+  background: #fffbeb;
+}
+
+
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
   .personal-tasks {

@@ -118,6 +118,17 @@ function App() {
     }
   };
 
+  /**
+   * タスク優先度更新処理（個人ページ用）
+   */
+  const handleUpdateTaskPriority = async (taskId: string, isPriority: boolean) => {
+    try {
+      await FirestoreService.updateTask(taskId, { isPriority });
+    } catch (error: any) {
+      console.error('タスク優先度更新エラー:', error);
+    }
+  };
+
   // 初期ローディング表示
   if (isLoading) {
     return (
@@ -160,6 +171,7 @@ function App() {
             currentUser={currentUser}
             allTasks={allTasks}
             onUpdateTaskStatus={handleUpdateTaskStatus}
+            onUpdateTaskPriority={handleUpdateTaskPriority}
           />
         );
       default:

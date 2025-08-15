@@ -7,6 +7,7 @@ interface PersonalTasksProps {
   currentUser: User;
   allTasks: Task[];
   onUpdateTaskStatus: (taskId: string, status: Task['status']) => void;
+  onUpdateTaskPriority: (taskId: string, isPriority: boolean) => void;
 }
 
 /**
@@ -16,7 +17,8 @@ interface PersonalTasksProps {
 export const PersonalTasks: React.FC<PersonalTasksProps> = ({
   currentUser,
   allTasks,
-  onUpdateTaskStatus
+  onUpdateTaskStatus,
+  onUpdateTaskPriority,
 }) => {
   const [selectedTaskType, setSelectedTaskType] = useState<TaskType | 'all'>('all');
 
@@ -30,13 +32,21 @@ export const PersonalTasks: React.FC<PersonalTasksProps> = ({
   };
 
   /**
-   * フィルター済みタスクを取得
+   * フィルターとソート済みタスクを取得
    */
-  const getFilteredTasks = () => {
+  const getFilteredAndSortedTasks = () => {
     const myTasks = getMyTasks();
-    return selectedTaskType === 'all' 
+    const filtered = selectedTaskType === 'all' 
       ? myTasks 
       : myTasks.filter(task => task.type === selectedTaskType);
+    
+    // 優先度と作成日でソート
+    return filtered.sort((a, b) => {
+      if (a.isPriority !== b.isPriority) {
+        return a.isPriority ? -1 : 1;
+      }
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
   };
 
   /**
@@ -127,7 +137,7 @@ export const PersonalTasks: React.FC<PersonalTasksProps> = ({
   };
 
   const myTasks = getMyTasks();
-  const filteredTasks = getFilteredTasks();
+  const finalTasks = getFilteredAndSortedTasks();
 
   return (
     <div className="personal-tasks">
@@ -185,7 +195,7 @@ export const PersonalTasks: React.FC<PersonalTasksProps> = ({
 
       {/* タスク一覧 */}
       <div className="personal-task-list">
-        {filteredTasks.length === 0 ? (
+        {finalTasks.length === 0 ? (
           <div className="empty-state">
             <p>該当するタスクがありません</p>
             {selectedTaskType !== 'all' && (
@@ -195,8 +205,8 @@ export const PersonalTasks: React.FC<PersonalTasksProps> = ({
             )}
           </div>
         ) : (
-          filteredTasks.map(task => (
-            <div key={task.id} className={`personal-task-card ${getStatusClass(task.status)} ${isOverdue(task) ? 'overdue' : ''} ${getTaskColorClass(task.color)}`}>
+          finalTasks.map(task => (
+            <div key={task.id} className={`personal-task-card ${getStatusClass(task.status)} ${isOverdue(task) ? 'overdue' : ''} ${getTaskColorClass(task.color)} ${task.isPriority ? 'priority' : ''}`}>
               <div className="task-header">
                 <div className="task-title-section">
                   <h3 className="task-title">{task.title}</h3>
@@ -228,6 +238,13 @@ export const PersonalTasks: React.FC<PersonalTasksProps> = ({
               )}
               
               <div className="task-actions">
+                <button
+                  onClick={() => onUpdateTaskPriority(task.id, !task.isPriority)}
+                  className={`priority-btn ${task.isPriority ? 'active' : ''}`}
+                  title="優先度を切り替え"
+                >
+                  {task.isPriority ? '★' : '☆'}
+                </button>
                 {task.status === 'todo' && (
                   <button
                     onClick={() => onUpdateTaskStatus(task.id, 'in_progress')}

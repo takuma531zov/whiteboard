@@ -64,6 +64,7 @@ export interface Task {
   description?: string; // 説明
   type: TaskType; // タスク種別
   status: TaskStatus; // ステータス
+  isPriority?: boolean; // 優先度
   assignedUserIds?: string[]; // アサインされたユーザーIDの配列
   createdBy: string; // 作成者ユーザーID
   dueDate?: Date; // 期限日時（週次タスクの場合）
