@@ -1,5 +1,6 @@
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../services/firebase';
+import { forceInitializeMasterData } from './initMasterData';
 
 // 手動でのFirebaseテスト関数
 export const manualFirebaseTest = async (email: string, password: string) => {
@@ -33,3 +34,4 @@ export const manualFirebaseTest = async (email: string, password: string) => {
 
 // グローバルに関数を追加（ブラウザコンソールから呼び出し可能）
 (window as any).manualTest = manualFirebaseTest;
+(window as any).initMasterData = forceInitializeMasterData;

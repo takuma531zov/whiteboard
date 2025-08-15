@@ -1,5 +1,6 @@
-import React from 'react';
-import { Task, User, TaskColor } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Task, User, TaskColor, WorkSession } from '../types';
+import { FirestoreService } from '../services/firestoreService';
 import './MainTaskArea.css';
 
 // メインタスクエリアのプロパティ
@@ -9,13 +10,14 @@ interface MainTaskAreaProps {
   currentUser: User;
   onStartTask: (taskId: string) => void;
   onCompleteTask: (taskId: string) => void;
+  onResumeTask: (taskId: string) => void;
   onUpdateStatus: (taskId: string, status: Task['status']) => void;
   getUserName: (userId: string) => string;
 }
 
 /**
  * メインタスク専用枠コンポーネント
- * アサインメンバー表示と着手・完了ボタン、作業時間計測機能
+ * アサインメンバー表示と開始・完了・再開ボタン、累積作業時間計測機能
  */
 export const MainTaskArea: React.FC<MainTaskAreaProps> = ({
   mainTasks,
@@ -23,9 +25,57 @@ export const MainTaskArea: React.FC<MainTaskAreaProps> = ({
   currentUser,
   onStartTask,
   onCompleteTask,
-  onUpdateStatus,
+  onResumeTask,
+  // onUpdateStatus,
   getUserName
 }) => {
+  // 作業時間関連の状態管理
+  // const [workSessions, setWorkSessions] = useState<Record<string, WorkSession[]>>({});
+  const [activeWorkSessions, setActiveWorkSessions] = useState<Record<string, WorkSession | null>>({});
+  const [dailyWorkTimes, setDailyWorkTimes] = useState<Record<string, number>>({});
+
+  /**
+   * 作業セッションデータを読み込み
+   */
+  const loadWorkSessionData = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    
+    for (const task of mainTasks) {
+      try {
+        // アクティブなセッションを取得
+        const activeSession = await FirestoreService.getActiveWorkSession(task.id, currentUser.id);
+        setActiveWorkSessions(prev => ({
+          ...prev,
+          [task.id]: activeSession
+        }));
+
+        // 当日の総作業時間を取得
+        const dailyTime = await FirestoreService.getDailyWorkTime(task.id, today);
+        setDailyWorkTimes(prev => ({
+          ...prev,
+          [task.id]: dailyTime
+        }));
+
+        // 作業セッション履歴を取得
+        // const sessions = await FirestoreService.getWorkSessionHistory(task.id, today);
+        // setWorkSessions(prev => ({
+        //   ...prev,
+        //   [task.id]: sessions
+        // }));
+
+      } catch (error) {
+        console.error(`タスク ${task.id} の作業セッションデータ取得エラー:`, error);
+      }
+    }
+  };
+
+  // コンポーネント初期化時とタスクリスト変更時にデータを読み込み
+  useEffect(() => {
+    if (mainTasks.length > 0) {
+      loadWorkSessionData();
+    }
+  }, [mainTasks]);
+
   /**
    * タスクの色クラス名を取得
    */
@@ -37,36 +87,81 @@ export const MainTaskArea: React.FC<MainTaskAreaProps> = ({
   /**
    * 担当者名を取得
    */
-  const getAssignedUsersText = (userIds?: string[]) => {
-    if (!userIds || userIds.length === 0) return '未アサイン';
+  // const getAssignedUsersText = (userIds?: string[]) => {
+  //   if (!userIds || userIds.length === 0) return '未アサイン';
 
-    if (userIds.length === 1) {
-      return getUserName(userIds[0]);
+  //   if (userIds.length === 1) {
+  //     return getUserName(userIds[0]);
+  //   }
+
+  //   if (userIds.length <= 3) {
+  //     return userIds.map(id => getUserName(id)).join(', ');
+  //   }
+
+  //   const firstTwo = userIds.slice(0, 2).map(id => getUserName(id)).join(', ');
+  //   return `${firstTwo} 他${userIds.length - 2}名`;
+  // };
+
+  /**
+   * 作業開始処理
+   */
+  const handleStartWork = async (taskId: string) => {
+    try {
+      await FirestoreService.startWorkSession(taskId, currentUser.id);
+      onStartTask(taskId);
+      loadWorkSessionData(); // データを再読み込み
+    } catch (error) {
+      console.error('作業開始エラー:', error);
+      alert('作業の開始に失敗しました');
     }
-
-    if (userIds.length <= 3) {
-      return userIds.map(id => getUserName(id)).join(', ');
-    }
-
-    const firstTwo = userIds.slice(0, 2).map(id => getUserName(id)).join(', ');
-    return `${firstTwo} 他${userIds.length - 2}名`;
   };
 
   /**
-   * 作業時間を計算（分単位）
+   * 作業完了処理
    */
-  const calculateWorkTime = (task: Task) => {
-    if (task.status === 'completed' && task.totalWorkTime) {
-      return task.totalWorkTime;
+  const handleCompleteWork = async (taskId: string) => {
+    try {
+      const activeSession = activeWorkSessions[taskId];
+      if (activeSession) {
+        await FirestoreService.endWorkSession(taskId, currentUser.id);
+      }
+      onCompleteTask(taskId);
+      loadWorkSessionData(); // データを再読み込み
+    } catch (error) {
+      console.error('作業完了エラー:', error);
+      alert('作業の完了に失敗しました');
     }
+  };
 
-    if (task.status === 'in_progress' && task.workStartTime) {
+  /**
+   * 作業再開処理
+   */
+  const handleResumeWork = async (taskId: string) => {
+    try {
+      await FirestoreService.startWorkSession(taskId, currentUser.id);
+      onResumeTask(taskId);
+      loadWorkSessionData(); // データを再読み込み
+    } catch (error) {
+      console.error('作業再開エラー:', error);
+      alert('作業の再開に失敗しました');
+    }
+  };
+
+  /**
+   * 現在の作業時間を計算（アクティブセッション + 完了セッション）
+   */
+  const getCurrentWorkTime = (taskId: string): number => {
+    let totalMinutes = dailyWorkTimes[taskId] || 0;
+    
+    // アクティブなセッションがあれば現在の経過時間を加算
+    const activeSession = activeWorkSessions[taskId];
+    if (activeSession) {
       const now = new Date();
-      const workingMinutes = Math.floor((now.getTime() - task.workStartTime.getTime()) / (1000 * 60));
-      return (task.totalWorkTime || 0) + workingMinutes;
+      const currentMinutes = Math.floor((now.getTime() - activeSession.startTime.getTime()) / (1000 * 60));
+      totalMinutes += currentMinutes;
     }
-
-    return task.totalWorkTime || 0;
+    
+    return totalMinutes;
   };
 
   /**
@@ -83,14 +178,96 @@ export const MainTaskArea: React.FC<MainTaskAreaProps> = ({
   };
 
   /**
+   * タスクに適したボタンを取得
+   */
+  const getActionButton = (task: Task) => {
+    const isAssigned = task.assignedUserIds?.includes(currentUser.id);
+    if (!isAssigned) {
+      return null;
+    }
+
+    const activeSession = activeWorkSessions[task.id];
+    
+    // アクティブなセッションがある場合（作業中）
+    if (activeSession) {
+      return (
+        <button 
+          onClick={() => handleCompleteWork(task.id)} 
+          className="task-action-button complete-button"
+          title="作業を完了"
+        >
+          完了
+        </button>
+      );
+    }
+
+    // ステータス別のボタン表示
+    switch (task.status) {
+      case 'todo':
+        return (
+          <button 
+            onClick={() => handleStartWork(task.id)} 
+            className="task-action-button start-button"
+            title="作業を開始"
+          >
+            開始
+          </button>
+        );
+      
+      case 'in_progress':
+        return (
+          <button 
+            onClick={() => handleCompleteWork(task.id)} 
+            className="task-action-button complete-button"
+            title="作業を完了"
+          >
+            完了
+          </button>
+        );
+      
+      case 'resumable':
+        return (
+          <button 
+            onClick={() => handleResumeWork(task.id)} 
+            className="task-action-button resume-button"
+            title="作業を再開"
+          >
+            再開
+          </button>
+        );
+      
+      case 'completed':
+        return (
+          <button 
+            onClick={() => handleResumeWork(task.id)} 
+            className="task-action-button resume-button"
+            title="作業を再開"
+          >
+            再開
+          </button>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  /**
    * タスクステータスの表示名を取得
    */
-  const getStatusText = (status: Task['status']) => {
-    switch (status) {
+  const getStatusText = (task: Task) => {
+    const activeSession = activeWorkSessions[task.id];
+    
+    if (activeSession) {
+      return '作業中';
+    }
+    
+    switch (task.status) {
       case 'todo': return '未着手';
       case 'in_progress': return '進行中';
       case 'completed': return '完了';
-      default: return status;
+      case 'resumable': return '再開可能';
+      default: return task.status;
     }
   };
 
@@ -131,18 +308,18 @@ export const MainTaskArea: React.FC<MainTaskAreaProps> = ({
                 <div className="main-task-title-section">
                   <h3 className="main-task-title">{task.title}</h3>
                   <span className={`main-task-status ${getStatusClass(task.status)}`}>
-                    {getStatusText(task.status)}
+                    {getStatusText(task)}
                   </span>
                 </div>
 
                 {/* 作業時間表示 */}
                 <div className="work-time-display">
-                  <span className="work-time-label">作業時間:</span>
+                  <span className="work-time-label">本日の作業時間:</span>
                   <span className="work-time-value">
-                    {formatWorkTime(calculateWorkTime(task))}
+                    {formatWorkTime(getCurrentWorkTime(task.id))}
                   </span>
-                  {task.status === 'in_progress' && (
-                    <span className="work-time-live">⏱️</span>
+                  {activeWorkSessions[task.id] && (
+                    <span className="work-time-live">⏱️ 進行中</span>
                   )}
                 </div>
               </div>
@@ -172,46 +349,9 @@ export const MainTaskArea: React.FC<MainTaskAreaProps> = ({
                 </div>
               </div>
 
-              {/* 着手・完了ボタン */}
+              {/* 開始・完了・再開ボタン */}
               <div className="main-task-actions">
-                {task.status === 'todo' && (
-                  <button
-                    onClick={() => onStartTask(task.id)}
-                    className="main-action-btn start-btn"
-                    title="作業を開始して時間計測を始める"
-                  >
-                    🚀 開始する
-                  </button>
-                )}
-
-                {task.status === 'in_progress' && (
-                  <>
-                    <button
-                      onClick={() => onCompleteTask(task.id)}
-                      className="main-action-btn complete-btn"
-                      title="作業を完了して時間計測を終了"
-                    >
-                      ✅ 完了する
-                    </button>
-                    <button
-                      onClick={() => onUpdateStatus(task.id, 'todo')}
-                      className="main-action-btn pause-btn"
-                      title="一時停止（時間計測を止める）"
-                    >
-                      ⏸️ 一時停止
-                    </button>
-                  </>
-                )}
-
-                {task.status === 'completed' && (
-                  <button
-                    onClick={() => onUpdateStatus(task.id, 'todo')}
-                    className="main-action-btn reopen-btn"
-                    title="タスクを再開する"
-                  >
-                    🔄 再開する
-                  </button>
-                )}
+                {getActionButton(task)}
               </div>
 
               {/* タスク作成情報 */}

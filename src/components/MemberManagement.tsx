@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User } from '../types';
+import { User, Department, Division, EmployeeType, MasterData } from '../types';
 import { FirestoreService } from '../services/firestoreService';
 import { AuthService } from '../services/authService';
 import './MemberManagement.css';
@@ -14,11 +14,32 @@ interface MemberFormData {
   name: string;
   employeeId: string;
   password: string;
+  department?: Department;
+  division?: Division;
+  employeeType?: EmployeeType;
 }
+
+// デフォルトのマスターデータ（フォールバック用）
+const DEFAULT_DEPARTMENTS: Department[] = [
+  '総務部', '人事部', '経理部', '開発部', '営業部', 
+  'マーケティング部', '品質管理部', '情報システム部'
+];
+
+const DEFAULT_DIVISIONS: Division[] = [
+  '業務課', '総務課', '人事課', '経理企画課', 'システム開発課',
+  'フロントエンド開発課', 'バックエンド開発課', '営業企画課', '顧客対応課',
+  'デジタルマーケティング課', 'PR広報課', 'QA課', 'インフラ管理課'
+];
+
+const DEFAULT_EMPLOYEE_TYPES: EmployeeType[] = [
+  '正社員', '契約社員', 'パートタイム', 'アルバイト', 
+  '派遣社員', '業務委託', 'インターン'
+];
 
 /**
  * メンバー管理画面コンポーネント
- * 出勤メンバーの管理と出勤状況の切替を行う
+ * メンバーの一覧表示、新規登録、削除機能を提供
+ * （出退勤打刻は専用ページで管理）
  */
 export const MemberManagement: React.FC<MemberManagementProps> = ({
   currentUser
@@ -27,8 +48,18 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [updatingUserId, setUpdatingUserId] = useState<string>('');
   const [deletingUserId, setDeletingUserId] = useState<string>('');
+  
+  // 動的マスターデータの状態
+  const [masterData, setMasterData] = useState<{
+    departments: string[];
+    divisions: string[];
+    employeeTypes: string[];
+  }>({
+    departments: DEFAULT_DEPARTMENTS,
+    divisions: DEFAULT_DIVISIONS,
+    employeeTypes: DEFAULT_EMPLOYEE_TYPES
+  });
   
   // メンバー追加関連の状態
   const [showAddForm, setShowAddForm] = useState(false);
@@ -36,7 +67,26 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
   const [formData, setFormData] = useState<MemberFormData>({
     name: '',
     employeeId: '',
-    password: ''
+    password: '',
+    department: undefined,
+    division: undefined,
+    employeeType: undefined
+  });
+
+  // メンバー編集関連の状態
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editFormData, setEditFormData] = useState<{
+    name: string;
+    department?: Department;
+    division?: Division;
+    employeeType?: EmployeeType;
+  }>({
+    name: '',
+    department: undefined,
+    division: undefined,
+    employeeType: undefined
   });
 
   /**
@@ -57,35 +107,43 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
   };
 
   /**
-   * コンポーネント初期化時にユーザー一覧を取得
+   * マスターデータを読み込み
    */
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  /**
-   * 出勤状況を切り替える
-   */
-  const toggleAttendance = async (userId: string, currentStatus: boolean) => {
+  const loadMasterData = async () => {
     try {
-      setUpdatingUserId(userId);
-      await FirestoreService.updateUserAttendance(userId, !currentStatus);
-      
-      // ローカル状態を更新
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId 
-            ? { ...user, isAttending: !currentStatus }
-            : user
-        )
-      );
+      const [departments, divisions, employeeTypes] = await Promise.all([
+        FirestoreService.getMasterData('department').catch(() => []),
+        FirestoreService.getMasterData('division').catch(() => []),
+        FirestoreService.getMasterData('employeeType').catch(() => [])
+      ]);
+
+      setMasterData({
+        departments: departments.length > 0 
+          ? departments.map((d: MasterData) => d.value as Department)
+          : DEFAULT_DEPARTMENTS,
+        divisions: divisions.length > 0 
+          ? divisions.map((d: MasterData) => d.value as Division)
+          : DEFAULT_DIVISIONS,
+        employeeTypes: employeeTypes.length > 0 
+          ? employeeTypes.map((d: MasterData) => d.value as EmployeeType)
+          : DEFAULT_EMPLOYEE_TYPES
+      });
     } catch (err: any) {
-      console.error('出勤状況更新エラー:', err);
-      setError('出勤状況の更新に失敗しました');
-    } finally {
-      setUpdatingUserId('');
+      console.error('マスターデータ取得エラー:', err);
+      // エラーの場合はデフォルト値を使用
     }
   };
+
+  /**
+   * コンポーネント初期化時にユーザー一覧とマスターデータを取得
+   */
+  useEffect(() => {
+    const initializeData = async () => {
+      await Promise.all([loadUsers(), loadMasterData()]);
+    };
+    initializeData();
+  }, []);
+
 
   /**
    * 出勤中のメンバー数を取得
@@ -111,11 +169,22 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
   /**
    * フォームの入力値を更新
    */
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value || undefined
+    }));
+  };
+
+  /**
+   * 編集フォームの入力値を更新
+   */
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value || undefined
     }));
   };
 
@@ -162,7 +231,10 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
       const newUser = await AuthService.registerWithoutLogin({
         employeeId: formData.employeeId,
         password: formData.password,
-        name: formData.name
+        name: formData.name,
+        department: formData.department,
+        division: formData.division,
+        employeeType: formData.employeeType
       }, originalUser);
 
       console.log('新しいメンバーが作成されました:', newUser);
@@ -174,7 +246,10 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
       setFormData({
         name: '',
         employeeId: '',
-        password: ''
+        password: '',
+        department: undefined,
+        division: undefined,
+        employeeType: undefined
       });
       setShowAddForm(false);
 
@@ -193,10 +268,96 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
     setFormData({
       name: '',
       employeeId: '',
-      password: ''
+      password: '',
+      department: undefined,
+      division: undefined,
+      employeeType: undefined
     });
     setShowAddForm(false);
     setError('');
+  };
+
+  /**
+   * メンバー編集を開始
+   */
+  const handleStartEdit = (user: User) => {
+    setEditingUser(user);
+    setEditFormData({
+      name: user.name,
+      department: user.department,
+      division: user.division,
+      employeeType: user.employeeType
+    });
+    setShowEditForm(true);
+    setError('');
+  };
+
+  /**
+   * メンバー編集をキャンセル
+   */
+  const handleCancelEdit = () => {
+    setEditingUser(null);
+    setEditFormData({
+      name: '',
+      department: undefined,
+      division: undefined,
+      employeeType: undefined
+    });
+    setShowEditForm(false);
+    setError('');
+  };
+
+  /**
+   * メンバー情報を更新
+   */
+  const handleUpdateMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingUser) return;
+    
+    if (!editFormData.name.trim()) {
+      setError('氏名を入力してください');
+      return;
+    }
+
+    try {
+      setEditing(true);
+      setError('');
+
+      // Firestoreでユーザー情報を更新
+      const updatedUser: User = {
+        ...editingUser,
+        name: editFormData.name,
+        department: editFormData.department,
+        division: editFormData.division,
+        employeeType: editFormData.employeeType,
+        updatedAt: new Date()
+      };
+
+      await FirestoreService.updateUser(editingUser.id, {
+        name: editFormData.name,
+        department: editFormData.department,
+        division: editFormData.division,
+        employeeType: editFormData.employeeType,
+        updatedAt: new Date()
+      });
+
+      // ローカル状態を更新
+      setUsers(prev => prev.map(user => 
+        user.id === editingUser.id ? updatedUser : user
+      ));
+
+      console.log('メンバー情報が更新されました:', updatedUser);
+
+      // フォームを閉じる
+      handleCancelEdit();
+
+    } catch (err: any) {
+      console.error('メンバー更新エラー:', err);
+      setError(err.message || 'メンバー情報の更新に失敗しました');
+    } finally {
+      setEditing(false);
+    }
   };
 
   /**
@@ -340,6 +501,55 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
                 />
               </div>
               
+              {/* 新しいステータスフィールド */}
+              <div className="form-group">
+                <label htmlFor="department">所属部署</label>
+                <select
+                  id="department"
+                  name="department"
+                  value={formData.department || ''}
+                  onChange={handleFormChange}
+                  disabled={adding}
+                >
+                  <option value="">未選択</option>
+                  {masterData.departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="division">所属課</label>
+                <select
+                  id="division"
+                  name="division"
+                  value={formData.division || ''}
+                  onChange={handleFormChange}
+                  disabled={adding}
+                >
+                  <option value="">未選択</option>
+                  {masterData.divisions.map(div => (
+                    <option key={div} value={div}>{div}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="employeeType">従業員区分</label>
+                <select
+                  id="employeeType"
+                  name="employeeType"
+                  value={formData.employeeType || ''}
+                  onChange={handleFormChange}
+                  disabled={adding}
+                >
+                  <option value="">未選択</option>
+                  {masterData.employeeTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+              
               <div className="email-preview">
                 <label>メールアドレス (自動生成)</label>
                 <div className="email-display">
@@ -369,6 +579,116 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
         </div>
       )}
 
+      {/* メンバー編集フォーム */}
+      {showEditForm && editingUser && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>メンバー情報を編集</h3>
+              <button 
+                onClick={handleCancelEdit}
+                className="close-button"
+              >×</button>
+            </div>
+            
+            <form onSubmit={handleUpdateMember} className="member-form">
+              <div className="form-group">
+                <label htmlFor="edit-name">氏名 *</label>
+                <input
+                  type="text"
+                  id="edit-name"
+                  name="name"
+                  value={editFormData.name}
+                  onChange={handleEditFormChange}
+                  placeholder="山田太郎"
+                  required
+                  disabled={editing}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="edit-employeeId">社員番号</label>
+                <input
+                  type="text"
+                  id="edit-employeeId"
+                  value={editingUser.employeeId}
+                  placeholder="0030228"
+                  disabled
+                  className="readonly-field"
+                />
+                <small className="form-hint">社員番号は変更できません</small>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="edit-department">所属部署</label>
+                <select
+                  id="edit-department"
+                  name="department"
+                  value={editFormData.department || ''}
+                  onChange={handleEditFormChange}
+                  disabled={editing}
+                >
+                  <option value="">未選択</option>
+                  {masterData.departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="edit-division">所属課</label>
+                <select
+                  id="edit-division"
+                  name="division"
+                  value={editFormData.division || ''}
+                  onChange={handleEditFormChange}
+                  disabled={editing}
+                >
+                  <option value="">未選択</option>
+                  {masterData.divisions.map(div => (
+                    <option key={div} value={div}>{div}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="edit-employeeType">従業員区分</label>
+                <select
+                  id="edit-employeeType"
+                  name="employeeType"
+                  value={editFormData.employeeType || ''}
+                  onChange={handleEditFormChange}
+                  disabled={editing}
+                >
+                  <option value="">未選択</option>
+                  {masterData.employeeTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-actions">
+                <button 
+                  type="button" 
+                  onClick={handleCancelEdit} 
+                  className="cancel-button"
+                  disabled={editing}
+                >
+                  キャンセル
+                </button>
+                <button 
+                  type="submit" 
+                  className="submit-button"
+                  disabled={editing}
+                >
+                  {editing ? '更新中...' : '更新する'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* メンバー一覧 */}
       <div className="member-list">
         {users.length === 0 ? (
@@ -384,6 +704,25 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
                   <span className="member-id">ID: {user.employeeId}</span>
                 </div>
                 
+                {/* 新しいステータス情報表示 */}
+                <div className="member-details">
+                  {user.department && (
+                    <span className="status-info department">
+                      🏢 {user.department}
+                    </span>
+                  )}
+                  {user.division && (
+                    <span className="status-info division">
+                      📋 {user.division}
+                    </span>
+                  )}
+                  {user.employeeType && (
+                    <span className="status-info employee-type">
+                      👤 {user.employeeType}
+                    </span>
+                  )}
+                </div>
+                
                 <div className="member-status">
                   <span className={`status-badge ${getAttendanceStatusClass(user.isAttending)}`}>
                     {getAttendanceStatusText(user.isAttending)}
@@ -393,23 +732,17 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
 
               <div className="member-actions">
                 <button
-                  onClick={() => toggleAttendance(user.id, user.isAttending)}
-                  disabled={updatingUserId === user.id || deletingUserId === user.id}
-                  className={`attendance-toggle ${user.isAttending ? 'checkout' : 'checkin'}`}
+                  onClick={() => handleStartEdit(user)}
+                  disabled={editing}
+                  className="edit-member-btn"
+                  title={`${user.name}を編集`}
                 >
-                  {updatingUserId === user.id ? (
-                    '更新中...'
-                  ) : user.isAttending ? (
-                    '退勤する'
-                  ) : (
-                    '出勤する'
-                  )}
+                  ✏️
                 </button>
-                
                 {user.id !== currentUser.id && (
                   <button
                     onClick={() => handleDeleteMember(user)}
-                    disabled={deletingUserId === user.id || updatingUserId === user.id}
+                    disabled={deletingUserId === user.id}
                     className="delete-member-btn"
                     title={`${user.name}を削除`}
                   >

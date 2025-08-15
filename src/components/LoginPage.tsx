@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { LoginFormData } from '../types';
-import { testFirebaseConnection } from '../utils/firebaseTest';
-import { createTestUser } from '../utils/createTestUser';
+// import { testFirebaseConnection } from '../utils/firebaseTest';
+// import { createTestUser } from '../utils/createTestUser';
 import './LoginPage.css';
 
 // ログインページのプロパティ

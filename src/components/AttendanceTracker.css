@@ -1,0 +1,257 @@
+/* 出退勤打刻コンポーネントのスタイル */
+.attendance-tracker {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ヘッダー部分 */
+.attendance-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.attendance-header h2 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.current-datetime {
+  margin-top: 10px;
+}
+
+.current-date {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.current-time {
+  font-size: 32px;
+  font-weight: bold;
+  color: #2563eb;
+  font-family: 'Courier New', monospace;
+}
+
+/* エラーメッセージ */
+.error-message {
+  background: #fee;
+  color: #c53030;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #feb2b2;
+}
+
+/* ステータス表示 */
+.attendance-status {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.status-indicator {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.status-indicator.status-not-started {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 2px solid #d1d5db;
+}
+
+.status-indicator.status-working {
+  background: #dcfce7;
+  color: #166534;
+  border: 2px solid #16a34a;
+}
+
+.status-indicator.status-finished {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 2px solid #3b82f6;
+}
+
+/* 本日の記録表示 */
+.today-record {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.today-record h3 {
+  margin: 0 0 15px 0;
+  color: #374151;
+  font-size: 18px;
+}
+
+.record-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.record-item:last-child {
+  border-bottom: none;
+}
+
+.record-item .label {
+  font-weight: 500;
+  color: #6b7280;
+  flex: 1;
+}
+
+.record-item .value {
+  font-weight: 600;
+  color: #111827;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  flex: 1;
+  text-align: right;
+}
+
+/* 打刻ボタン */
+.attendance-actions {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.clock-button {
+  padding: 16px 48px;
+  font-size: 20px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 160px;
+}
+
+.clock-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.clock-button.clock-in {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.clock-button.clock-in:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+}
+
+.clock-button.clock-out {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.clock-button.clock-out:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+}
+
+.completion-message {
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: 2px solid #93c5fd;
+}
+
+/* 注意事項 */
+.attendance-note {
+  background: #fffbeb;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #fbbf24;
+}
+
+.attendance-note p {
+  margin: 4px 0;
+  color: #92400e;
+  font-size: 14px;
+}
+
+.attendance-note p:first-child {
+  margin-top: 0;
+}
+
+.attendance-note p:last-child {
+  margin-bottom: 0;
+}
+
+/* ローディング */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .attendance-tracker {
+    margin: 10px;
+    padding: 16px;
+  }
+  
+  .current-time {
+    font-size: 28px;
+  }
+  
+  .clock-button {
+    padding: 14px 32px;
+    font-size: 18px;
+    min-width: 140px;
+  }
+  
+  .record-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .record-item .value {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .attendance-header h2 {
+    font-size: 20px;
+  }
+  
+  .current-time {
+    font-size: 24px;
+  }
+  
+  .clock-button {
+    width: 100%;
+    max-width: 280px;
+  }
+}

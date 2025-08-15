@@ -4,9 +4,12 @@ import { LoginPage } from './components/LoginPage';
 import { MemberManagement } from './components/MemberManagement';
 import { TaskManagement } from './components/TaskManagement';
 import { WhiteboardMain } from './components/WhiteboardMain';
+import { AttendanceTracker } from './components/AttendanceTracker';
+import { MasterDataManagement } from './components/MasterDataManagement';
 import { AuthService } from './services/authService';
 import { User, LoginFormData } from './types';
 import { debugFirebaseConfig } from './utils/debugFirebase';
+import { initializeMasterData } from './utils/initMasterData';
 import './utils/manualTest'; // 手動テスト関数をロード
 import './App.css';
 
@@ -21,7 +24,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState<'main' | 'members' | 'tasks' | 'whiteboard'>('whiteboard');
+  const [currentPage, setCurrentPage] = useState<'main' | 'members' | 'tasks' | 'whiteboard' | 'attendance' | 'masterdata'>('whiteboard');
 
   /**
    * 認証状態の初期化と監視
@@ -29,6 +32,9 @@ function App() {
   useEffect(() => {
     // Firebase設定確認（デバッグ用）
     debugFirebaseConfig();
+    
+    // マスターデータ初期化（バックグラウンドで実行）
+    initializeMasterData();
     
     const unsubscribe = AuthService.onAuthStateChanged(async (user) => {
       setFirebaseUser(user);
@@ -114,6 +120,10 @@ function App() {
         return <TaskManagement currentUser={currentUser} />;
       case 'whiteboard':
         return <WhiteboardMain currentUser={currentUser} />;
+      case 'attendance':
+        return <AttendanceTracker currentUser={currentUser} firebaseUser={firebaseUser} />;
+      case 'masterdata':
+        return <MasterDataManagement />;
       default:
         return (
           <div className="welcome-message">
@@ -131,6 +141,10 @@ function App() {
               <div className="feature-card" onClick={() => setCurrentPage('tasks')}>
                 <h3>📋 タスク管理</h3>
                 <p>日時・週次・メインタスクの作成と管理</p>
+              </div>
+              <div className="feature-card" onClick={() => setCurrentPage('attendance')}>
+                <h3>🕰️ 出退勤打刻</h3>
+                <p>KOT代替の出退勤タイムスタンプ記録</p>
               </div>
             </div>
           </div>
@@ -164,6 +178,18 @@ function App() {
               className={currentPage === 'tasks' ? 'nav-button active' : 'nav-button'}
             >
               📋 タスク管理
+            </button>
+            <button 
+              onClick={() => setCurrentPage('attendance')}
+              className={currentPage === 'attendance' ? 'nav-button active' : 'nav-button'}
+            >
+              🕰️ 出退勤
+            </button>
+            <button 
+              onClick={() => setCurrentPage('masterdata')}
+              className={currentPage === 'masterdata' ? 'nav-button active' : 'nav-button'}
+            >
+              ⚙️ マスタ管理
             </button>
             <button 
               onClick={() => setCurrentPage('main')}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Task, TaskType, TaskStatus } from '../types';
+import { User, Task, TaskType, TaskStatus, TaskTypeFilter } from '../types';
 import { FirestoreService } from '../services/firestoreService';
 import './MemberTaskAssignment.css';
 
@@ -8,19 +8,19 @@ interface MemberTaskAssignmentProps {
   currentUser: User;
 }
 
-// タスク割り当て情報の型
-interface TaskAssignment {
-  taskId: string;
-  memberId: string;
-  assignedAt: Date;
-}
+// タスク割り当て情報の型（現在未使用）
+// interface TaskAssignment {
+//   taskId: string;
+//   memberId: string;
+//   assignedAt: Date;
+// }
 
 /**
  * メンバー別タスク割り当て画面コンポーネント
  * メンバーを中心としたタスク管理を行う
  */
 export const MemberTaskAssignment: React.FC<MemberTaskAssignmentProps> = ({
-  currentUser
+  // currentUser
 }) => {
   // 状態管理
   const [members, setMembers] = useState<User[]>([]);
@@ -64,7 +64,7 @@ export const MemberTaskAssignment: React.FC<MemberTaskAssignmentProps> = ({
   /**
    * メンバーに割り当て済みのタスクを取得
    */
-  const getMemberTasks = (memberId: string, taskType?: TaskType) => {
+  const getMemberTasks = (memberId: string, taskType?: TaskTypeFilter) => {
     let memberTasks = tasks.filter(task => 
       task.assignedUserIds && task.assignedUserIds.includes(memberId)
     );
@@ -79,7 +79,7 @@ export const MemberTaskAssignment: React.FC<MemberTaskAssignmentProps> = ({
   /**
    * 未アサインのタスクを取得
    */
-  const getUnassignedTasks = (taskType?: TaskType) => {
+  const getUnassignedTasks = (taskType?: TaskTypeFilter) => {
     let unassignedTasks = tasks.filter(task => 
       !task.assignedUserIds || task.assignedUserIds.length === 0
     );
@@ -319,7 +319,7 @@ export const MemberTaskAssignment: React.FC<MemberTaskAssignmentProps> = ({
           {members.map(member => {
             const memberTasks = getMemberTasks(member.id, selectedTaskType !== 'all' ? selectedTaskType : undefined);
             const completedTasks = memberTasks.filter(t => t.status === 'completed');
-            const inProgressTasks = memberTasks.filter(t => t.status === 'in_progress');
+            // const inProgressTasks = memberTasks.filter(t => t.status === 'in_progress');
             const overdueTask = memberTasks.filter(t => isOverdue(t));
 
             return (

@@ -10,7 +10,6 @@ interface WhiteboardAreaProps {
   currentUser: User;
   onUpdateTaskAssignment: (taskId: string, assignedUserIds: string[]) => void;
   onUpdateTaskStatus: (taskId: string, status: Task['status']) => void;
-  getUserName: (userId: string) => string;
 }
 
 /**
@@ -21,10 +20,9 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
   dailyTasks,
   weeklyTasks,
   attendingUsers,
-  currentUser,
+  // currentUser,
   onUpdateTaskAssignment,
-  onUpdateTaskStatus,
-  getUserName
+  onUpdateTaskStatus
 }) => {
   const [selectedTab, setSelectedTab] = useState<'daily' | 'weekly'>('daily');
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
@@ -47,20 +45,20 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
   /**
    * 担当者名を取得
    */
-  const getAssignedUsersText = (userIds?: string[]) => {
-    if (!userIds || userIds.length === 0) return '未アサイン';
+  // const getAssignedUsersText = (userIds?: string[]) => {
+  //   if (!userIds || userIds.length === 0) return '未アサイン';
 
-    if (userIds.length === 1) {
-      return getUserName(userIds[0]);
-    }
+  //   if (userIds.length === 1) {
+  //     return getUserName(userIds[0]);
+  //   }
 
-    if (userIds.length <= 2) {
-      return userIds.map(id => getUserName(id)).join(', ');
-    }
+  //   if (userIds.length <= 2) {
+  //     return userIds.map(id => getUserName(id)).join(', ');
+  //   }
 
-    const firstName = getUserName(userIds[0]);
-    return `${firstName} 他${userIds.length - 1}名`;
-  };
+  //   const firstName = getUserName(userIds[0]);
+  //   return `${firstName} 他${userIds.length - 1}名`;
+  // };
 
   /**
    * 曜日の表示名を取得
@@ -119,8 +117,8 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
     // 最大10タスクまで表示、優先度: 進行中 > 未着手 > 完了
     return tasks
       .sort((a, b) => {
-        const statusOrder = { 'in_progress': 0, 'todo': 1, 'completed': 2 };
-        return statusOrder[a.status] - statusOrder[b.status];
+        const statusOrder: Record<string, number> = { 'in_progress': 0, 'todo': 1, 'completed': 2, 'resumable': 1 };
+        return (statusOrder[a.status] || 3) - (statusOrder[b.status] || 3);
       })
       .slice(0, 10);
   };

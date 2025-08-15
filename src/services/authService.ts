@@ -8,7 +8,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
-import { User, LoginFormData } from '../types';
+import { User, LoginFormData, Department, Division, EmployeeType } from '../types';
 
 /**
  * 認証サービス
@@ -151,9 +151,12 @@ export class AuthService {
     employeeId: string;
     password: string;
     name: string;
+    department?: Department;
+    division?: Division;
+    employeeType?: EmployeeType;
   }, originalUser: FirebaseUser): Promise<User> {
     try {
-      const { employeeId, password, name } = registrationData;
+      const { employeeId, password, name, department, division, employeeType } = registrationData;
       const email = `${employeeId}@kanri.com`;
       
       // Firebase Authenticationでユーザー作成
@@ -165,6 +168,9 @@ export class AuthService {
         employeeId,
         name,
         isAttending: false,
+        department,
+        division,
+        employeeType,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -228,6 +234,9 @@ export class AuthService {
           employeeId: data.employeeId,
           name: data.name,
           isAttending: data.isAttending || false,
+          department: data.department,
+          division: data.division,
+          employeeType: data.employeeType,
           createdAt: data.createdAt?.toDate() || new Date(),
           updatedAt: data.updatedAt?.toDate() || new Date()
         };

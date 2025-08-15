@@ -30,12 +30,12 @@ export const WhiteboardMain: React.FC<WhiteboardMainProps> = ({
    */
   useEffect(() => {
     loadInitialData();
-    
+
     // リアルタイム監視を設定
     const unsubscribeTasks = FirestoreService.subscribeToTasks((updatedTasks) => {
       setTasks(updatedTasks);
     });
-    
+
     const unsubscribeUsers = FirestoreService.subscribeToUsers((updatedUsers) => {
       setUsers(updatedUsers);
       setAttendingUsers(updatedUsers.filter(user => user.isAttending));
@@ -57,7 +57,7 @@ export const WhiteboardMain: React.FC<WhiteboardMainProps> = ({
         FirestoreService.getAllTasks(),
         FirestoreService.getAllUsers()
       ]);
-      
+
       setTasks(tasksData);
       setUsers(usersData);
       setAttendingUsers(usersData.filter(user => user.isAttending));
@@ -100,10 +100,23 @@ export const WhiteboardMain: React.FC<WhiteboardMainProps> = ({
    */
   const completeMainTask = async (taskId: string) => {
     try {
-      await FirestoreService.completeMainTask(taskId);
+      // タスクを再開可能状態に変更
+      await FirestoreService.updateTask(taskId, { status: 'resumable' });
     } catch (err: any) {
       console.error('メインタスク完了エラー:', err);
       setError('タスクの完了に失敗しました');
+    }
+  };
+
+  /**
+   * メインタスクの再開
+   */
+  const resumeMainTask = async (taskId: string) => {
+    try {
+      await FirestoreService.updateTask(taskId, { status: 'in_progress' });
+    } catch (err: any) {
+      console.error('メインタスク再開エラー:', err);
+      setError('タスクの再開に失敗しました');
     }
   };
 
@@ -149,7 +162,7 @@ export const WhiteboardMain: React.FC<WhiteboardMainProps> = ({
         // メインタスクで長時間進行中
         if (task.type === 'main' && task.status === 'in_progress' && task.workStartTime) {
           const hoursInProgress = (now.getTime() - task.workStartTime.getTime()) / (1000 * 60 * 60);
-          if (hoursInProgress > 4) { // 4時間以上進行中
+          if (hoursInProgress > 5) { // 5時間以上進行中
             return true;
           }
         }
@@ -186,7 +199,7 @@ export const WhiteboardMain: React.FC<WhiteboardMainProps> = ({
       )}
 
       {/* アラート表示 */}
-      <AlertPanel 
+      <AlertPanel
         alertTasks={alertTasks}
         getUserName={getUserName}
         onTaskClick={(taskId) => {
@@ -202,6 +215,7 @@ export const WhiteboardMain: React.FC<WhiteboardMainProps> = ({
         currentUser={currentUser}
         onStartTask={startMainTask}
         onCompleteTask={completeMainTask}
+        onResumeTask={resumeMainTask}
         onUpdateStatus={updateTaskStatus}
         getUserName={getUserName}
       />
@@ -214,7 +228,6 @@ export const WhiteboardMain: React.FC<WhiteboardMainProps> = ({
         currentUser={currentUser}
         onUpdateTaskAssignment={updateTaskAssignment}
         onUpdateTaskStatus={updateTaskStatus}
-        getUserName={getUserName}
       />
     </div>
   );

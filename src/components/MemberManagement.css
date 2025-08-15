@@ -206,9 +206,43 @@
   border-radius: 4px;
 }
 
+/* 新しいステータス情報表示 */
+.member-details {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.status-info {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-info.department {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-info.division {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-info.employee-type {
+  background: #fef3c7;
+  color: #d97706;
+}
+
 .member-status {
   display: flex;
   align-items: center;
+  margin-top: 8px;
 }
 
 .status-badge {
@@ -239,38 +273,35 @@
   align-items: center;
 }
 
-.attendance-toggle {
-  padding: 8px 16px;
+
+/* 編集ボタン */
+.edit-member-btn {
+  background: #dbeafe;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  padding: 8px;
   border-radius: 6px;
-  border: none;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 16px;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 36px;
 }
 
-.attendance-toggle.checkin {
-  background-color: #22c55e;
-  color: white;
+.edit-member-btn:hover:not(:disabled) {
+  background: #bfdbfe;
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(29, 78, 216, 0.2);
 }
 
-.attendance-toggle.checkin:hover:not(:disabled) {
-  background-color: #16a34a;
-}
-
-.attendance-toggle.checkout {
-  background-color: #ef4444;
-  color: white;
-}
-
-.attendance-toggle.checkout:hover:not(:disabled) {
-  background-color: #dc2626;
-}
-
-.attendance-toggle:disabled {
+.edit-member-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* 削除ボタン */
@@ -408,7 +439,8 @@
   margin-bottom: 6px;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   width: 100%;
   padding: 10px 12px;
   border: 2px solid #e5e7eb;
@@ -416,17 +448,34 @@
   font-size: 14px;
   transition: border-color 0.2s;
   box-sizing: border-box;
+  background: white;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.form-group input:disabled {
+.form-group input:disabled,
+.form-group select:disabled {
   background: #f9fafb;
   cursor: not-allowed;
+}
+
+.readonly-field {
+  background: #f3f4f6 !important;
+  color: #6b7280 !important;
+  cursor: not-allowed !important;
+}
+
+.form-group select {
+  cursor: pointer;
+}
+
+.form-group select option {
+  padding: 8px;
 }
 
 .form-hint {
@@ -558,6 +607,15 @@
     align-items: flex-start;
   }
   
+  .member-details {
+    width: 100%;
+  }
+  
+  .status-info {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+  
   .member-actions {
     margin-left: 0;
     align-self: flex-end;
@@ -565,5 +623,14 @@
   
   .modal-content {
     width: 95%;
+  }
+  
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+  
+  .form-actions button {
+    width: 100%;
   }
 }

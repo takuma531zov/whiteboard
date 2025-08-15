@@ -11,6 +11,21 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
     
+    // 出退勤記録コレクションのルール
+    match /attendance/{attendanceId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // マスターデータコレクションのルール
+    match /masterData/{masterDataId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // 作業セッションコレクションのルール
+    match /workSessions/{workSessionId} {
+      allow read, write: if request.auth != null;
+    }
+    
     // 期限切れレポートコレクションのルール（読み取り専用）
     match /overdueReports/{reportId} {
       allow read: if request.auth != null;
