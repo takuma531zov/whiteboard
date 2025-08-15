@@ -207,7 +207,6 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
       <div className="whiteboard-header">
         <div className="whiteboard-title">
           <h2>📋ホワイトボード</h2>
-          <p className="whiteboard-subtitle">タスクをドラッグして出勤メンバーに割り当て</p>
         </div>
 
         {/* タブ */}
@@ -357,13 +356,7 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
         </div>
       </div>
 
-      {/* ドラッグ中のヒント */}
-      {draggedTask && (
-        <div className="drag-hint">
-          「{draggedTask.title}」を移動中...
-          出勤メンバーの列にドロップして割り当ててください
-        </div>
-      )}
+      
     </div>
   );
 };
