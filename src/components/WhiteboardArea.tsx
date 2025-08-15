@@ -143,21 +143,6 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
     });
   };
 
-  /**
-   * タスクが担当者不在かどうかを判定（簡易版）
-   */
-  const isAbsentOnlyTask = (task: Task) => {
-    if (!task.assignedUserIds || task.assignedUserIds.length === 0) {
-      return false; // 真の未アサインタスク
-    }
-    
-    // 担当者全員が出勤していない場合
-    const hasAttendingAssignee = task.assignedUserIds.some(userId => {
-      return attendingUsers.some((u: User) => u.id === userId);
-    });
-    
-    return !hasAttendingAssignee;
-  };
 
   /**
    * ドラッグ開始
