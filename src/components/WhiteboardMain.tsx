@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, Task } from '../types';
 import { FirestoreService } from '../services/firestoreService';
 import { MainTaskArea } from './MainTaskArea';
@@ -24,51 +24,54 @@ export const WhiteboardMain: React.FC<WhiteboardMainProps> = ({
   const [attendingUsers, setAttendingUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  /**
-   * 初期データの読み込み
-   */
+  const tasksInitialized = useRef(false);
+  const usersInitialized = useRef(false);
+
+  // データ読み込みとリアルタイム監視
   useEffect(() => {
-    loadInitialData();
+    console.log('[Debug] useEffect for data subscription is running.');
 
-    // リアルタイム監視を設定
     const unsubscribeTasks = FirestoreService.subscribeToTasks((updatedTasks) => {
+      console.log(`[Debug] Firestore callback: Tasks received (${updatedTasks.length} tasks).`);
       setTasks(updatedTasks);
+      tasksInitialized.current = true;
+      if (usersInitialized.current) {
+        console.log('[Debug] Both tasks and users are initialized. Setting loading to false.');
+        setLoading(false);
+      }
     });
 
     const unsubscribeUsers = FirestoreService.subscribeToUsers((updatedUsers) => {
+      console.log(`[Debug] Firestore callback: Users received (${updatedUsers.length} users).`);
       setUsers(updatedUsers);
       setAttendingUsers(updatedUsers.filter(user => user.isAttending));
+      usersInitialized.current = true;
+      if (tasksInitialized.current) {
+        console.log('[Debug] Both tasks and users are initialized. Setting loading to false.');
+        setLoading(false);
+      }
     });
 
     return () => {
+      console.log('[Debug] Cleanup: Unsubscribing from data listeners.');
       unsubscribeTasks();
       unsubscribeUsers();
     };
   }, []);
 
-  /**
-   * 初期データの読み込み
-   */
-  const loadInitialData = async () => {
-    try {
-      setLoading(true);
-      const [tasksData, usersData] = await Promise.all([
-        FirestoreService.getAllTasks(),
-        FirestoreService.getAllUsers()
-      ]);
-
-      setTasks(tasksData);
-      setUsers(usersData);
-      setAttendingUsers(usersData.filter(user => user.isAttending));
-      setError('');
-    } catch (err: any) {
-      console.error('データ読み込みエラー:', err);
-      setError('データの読み込みに失敗しました');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // スクロールイベントの監視
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // 初期チェック
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   /**
    * タスクの状態を更新
@@ -189,7 +192,7 @@ export const WhiteboardMain: React.FC<WhiteboardMainProps> = ({
   const alertTasks = getAlertTasks();
 
   return (
-    <div className="whiteboard-main">
+    <div className={`whiteboard-main ${isScrolled ? 'scrolled-view' : ''}`}>
       {/* エラーメッセージ */}
       {error && (
         <div className="error-banner">
@@ -198,37 +201,41 @@ export const WhiteboardMain: React.FC<WhiteboardMainProps> = ({
         </div>
       )}
 
-      {/* アラート表示 */}
-      <AlertPanel
-        alertTasks={alertTasks}
-        getUserName={getUserName}
-        onTaskClick={(taskId) => {
-          // タスクをクリックした時の処理（将来的に実装）
-          console.log('Alert task clicked:', taskId);
-        }}
-      />
+      <div className="main-task-container">
+        {/* アラート表示 */}
+        <AlertPanel
+          alertTasks={alertTasks}
+          getUserName={getUserName}
+          onTaskClick={(taskId) => {
+            // タスクをクリックした時の処理（将来的に実装）
+            console.log('Alert task clicked:', taskId);
+          }}
+        />
 
-      {/* メインタスク専用枠 */}
-      <MainTaskArea
-        mainTasks={mainTasks}
-        users={users}
-        currentUser={currentUser}
-        onStartTask={startMainTask}
-        onCompleteTask={completeMainTask}
-        onResumeTask={resumeMainTask}
-        onUpdateStatus={updateTaskStatus}
-        getUserName={getUserName}
-      />
+        {/* メインタスク専用枠 */}
+        <MainTaskArea
+          mainTasks={mainTasks}
+          users={users}
+          currentUser={currentUser}
+          onStartTask={startMainTask}
+          onCompleteTask={completeMainTask}
+          onResumeTask={resumeMainTask}
+          onUpdateStatus={updateTaskStatus}
+          getUserName={getUserName}
+        />
+      </div>
 
       {/* ホワイトボード領域 */}
-      <WhiteboardArea
-        dailyTasks={dailyTasks}
-        weeklyTasks={weeklyTasks}
-        attendingUsers={attendingUsers}
-        currentUser={currentUser}
-        onUpdateTaskAssignment={updateTaskAssignment}
-        onUpdateTaskStatus={updateTaskStatus}
-      />
+      <div className="whiteboard-container">
+        <WhiteboardArea
+          dailyTasks={dailyTasks}
+          weeklyTasks={weeklyTasks}
+          attendingUsers={attendingUsers}
+          currentUser={currentUser}
+          onUpdateTaskAssignment={updateTaskAssignment}
+          onUpdateTaskStatus={updateTaskStatus}
+        />
+      </div>
     </div>
   );
 };

@@ -41,7 +41,12 @@ function App() {
     // マスターデータ初期化（バックグラウンドで実行）
     initializeMasterData();
     
-    const unsubscribe = AuthService.onAuthStateChanged(async (user) => {
+    let unsubscribeTasks = () => {}; // No-op function by default
+
+    const unsubscribeAuth = AuthService.onAuthStateChanged(async (user) => {
+      // Unsubscribe from previous user's tasks before proceeding
+      unsubscribeTasks();
+
       setFirebaseUser(user);
       
       if (user) {
@@ -49,15 +54,10 @@ function App() {
         const userData = await AuthService.getUserData(user.uid);
         setCurrentUser(userData);
         
-        // タスクデータの購読を開始
-        const unsubscribeTasks = FirestoreService.subscribeToTasks((updatedTasks) => {
+        // Subscribe to new user's tasks
+        unsubscribeTasks = FirestoreService.subscribeToTasks((updatedTasks) => {
           setAllTasks(updatedTasks);
         });
-        
-        // クリーンアップ関数を保存（ログアウト時に呼び出し）
-        return () => {
-          unsubscribeTasks();
-        };
       } else {
         // ログアウト状態
         setCurrentUser(null);
@@ -67,8 +67,11 @@ function App() {
       setIsLoading(false);
     });
 
-    // クリーンアップ関数を返す
-    return () => unsubscribe();
+    // Cleanup on component unmount
+    return () => {
+      unsubscribeAuth();
+      unsubscribeTasks();
+    };
   }, []);
 
   /**

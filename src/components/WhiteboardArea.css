@@ -64,7 +64,8 @@
 .whiteboard-content {
   display: flex;
   gap: 20px;
-  min-height: 500px;
+  flex-grow: 1; /* 追加 */
+  min-height: 0; /* 追加 */
 }
 
 /* メンバー列 - コンパクト化、最大10人対応 */
@@ -85,6 +86,8 @@
   border-radius: 8px;
   padding: 12px;
   transition: all 0.2s;
+  display: flex; /* 追加 */
+  flex-direction: column; /* 追加 */
 }
 
 .member-column:hover {
@@ -147,8 +150,9 @@
   flex-direction: column;
   gap: 6px;
   min-height: 150px;
-  max-height: 400px;
+  /* max-height: 400px; を削除 */
   overflow-y: auto;
+  flex-grow: 1; /* 追加 */
 }
 
 /* 未アサイン列 - コンパクト化 */
@@ -212,14 +216,14 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 4px;
-  padding: 8px;
+  padding: 6px;
   cursor: grab;
   transition: all 0.2s;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   font-size: 11px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .task-card:hover {
@@ -251,11 +255,11 @@
 }
 
 .task-card-header {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .task-title {
-  margin: 0 0 2px 0;
+  margin: 0;
   font-size: 11px;
   font-weight: 600;
   color: #111827;
@@ -335,7 +339,7 @@
 .task-actions {
   display: flex;
   gap: 2px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .task-action-btn {

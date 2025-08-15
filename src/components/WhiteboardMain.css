@@ -63,3 +63,35 @@
     min-height: calc(100vh - 80px);
   }
 }
+
+/* スクロール時のレイアウト変更 */
+.main-task-container,
+.whiteboard-container {
+  transition: all 0.4s ease-in-out;
+}
+
+.scrolled-view .main-task-container {
+  height: 0;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.scrolled-view .whiteboard-container {
+  height: 100vh;
+  padding-top: 20px; /* スクロールした際に上部に少し余白を持たせる */
+}
+
+/* ホワイトボードエリアの高さを柔軟に */
+.whiteboard-container .whiteboard-area {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.whiteboard-container .whiteboard-area .whiteboard-content {
+  flex-grow: 1;
+  min-height: 0; /* flex-grow を有効にするため */
+}
