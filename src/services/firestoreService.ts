@@ -722,7 +722,7 @@ export class FirestoreService {
   /**
    * 指定タイプのマスターデータを全て取得
    */
-  static async getMasterData(type: 'department' | 'division' | 'employeeType'): Promise<MasterData[]> {
+  static async getMasterData(type: 'department' | 'division' | 'employeeType' | 'role'): Promise<MasterData[]> {
     try {
       console.log(`マスターデータ取得開始: ${type}`);
       const masterRef = collection(db, 'masterData');
@@ -785,7 +785,7 @@ export class FirestoreService {
   /**
    * マスターデータを追加
    */
-  static async addMasterData(type: 'department' | 'division' | 'employeeType', value: string): Promise<MasterData> {
+  static async addMasterData(type: 'department' | 'division' | 'employeeType' | 'role', value: string): Promise<MasterData> {
     try {
       // 既存の最大order値を取得
       const existingData = await this.getMasterData(type);

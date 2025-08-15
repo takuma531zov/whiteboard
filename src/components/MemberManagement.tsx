@@ -17,6 +17,7 @@ interface MemberFormData {
   department?: Department;
   division?: Division;
   employeeType?: EmployeeType;
+  role?: string;
 }
 
 // デフォルトのマスターデータ（フォールバック用）
@@ -34,6 +35,10 @@ const DEFAULT_DIVISIONS: Division[] = [
 const DEFAULT_EMPLOYEE_TYPES: EmployeeType[] = [
   '正社員', '契約社員', 'パートタイム', 'アルバイト', 
   '派遣社員', '業務委託', 'インターン'
+];
+
+const DEFAULT_ROLES: string[] = [
+  '管理者', '部長', '課長', '主任', 'メンバー'
 ];
 
 /**
@@ -55,10 +60,12 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
     departments: string[];
     divisions: string[];
     employeeTypes: string[];
+    roles: string[];
   }>({
     departments: DEFAULT_DEPARTMENTS,
     divisions: DEFAULT_DIVISIONS,
-    employeeTypes: DEFAULT_EMPLOYEE_TYPES
+    employeeTypes: DEFAULT_EMPLOYEE_TYPES,
+    roles: DEFAULT_ROLES
   });
   
   // メンバー追加関連の状態
@@ -70,7 +77,8 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
     password: '',
     department: undefined,
     division: undefined,
-    employeeType: undefined
+    employeeType: undefined,
+    role: undefined
   });
 
   // メンバー編集関連の状態
@@ -82,11 +90,13 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
     department?: Department;
     division?: Division;
     employeeType?: EmployeeType;
+    role?: string;
   }>({
     name: '',
     department: undefined,
     division: undefined,
-    employeeType: undefined
+    employeeType: undefined,
+    role: undefined
   });
 
   /**
@@ -111,10 +121,11 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
    */
   const loadMasterData = async () => {
     try {
-      const [departments, divisions, employeeTypes] = await Promise.all([
+      const [departments, divisions, employeeTypes, roles] = await Promise.all([
         FirestoreService.getMasterData('department').catch(() => []),
         FirestoreService.getMasterData('division').catch(() => []),
-        FirestoreService.getMasterData('employeeType').catch(() => [])
+        FirestoreService.getMasterData('employeeType').catch(() => []),
+        FirestoreService.getMasterData('role').catch(() => [])
       ]);
 
       setMasterData({
@@ -126,7 +137,10 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
           : DEFAULT_DIVISIONS,
         employeeTypes: employeeTypes.length > 0 
           ? employeeTypes.map((d: MasterData) => d.value as EmployeeType)
-          : DEFAULT_EMPLOYEE_TYPES
+          : DEFAULT_EMPLOYEE_TYPES,
+        roles: roles.length > 0 
+          ? roles.map((d: MasterData) => d.value)
+          : DEFAULT_ROLES
       });
     } catch (err: any) {
       console.error('マスターデータ取得エラー:', err);
@@ -234,7 +248,8 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
         name: formData.name,
         department: formData.department,
         division: formData.division,
-        employeeType: formData.employeeType
+        employeeType: formData.employeeType,
+        role: formData.role
       }, originalUser);
 
       console.log('新しいメンバーが作成されました:', newUser);
@@ -249,7 +264,8 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
         password: '',
         department: undefined,
         division: undefined,
-        employeeType: undefined
+        employeeType: undefined,
+        role: undefined
       });
       setShowAddForm(false);
 
@@ -271,7 +287,8 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
       password: '',
       department: undefined,
       division: undefined,
-      employeeType: undefined
+      employeeType: undefined,
+      role: undefined
     });
     setShowAddForm(false);
     setError('');
@@ -286,7 +303,8 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
       name: user.name,
       department: user.department,
       division: user.division,
-      employeeType: user.employeeType
+      employeeType: user.employeeType,
+      role: user.role
     });
     setShowEditForm(true);
     setError('');
@@ -301,7 +319,8 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
       name: '',
       department: undefined,
       division: undefined,
-      employeeType: undefined
+      employeeType: undefined,
+      role: undefined
     });
     setShowEditForm(false);
     setError('');
@@ -331,6 +350,7 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
         department: editFormData.department,
         division: editFormData.division,
         employeeType: editFormData.employeeType,
+        role: editFormData.role as any,
         updatedAt: new Date()
       };
 
@@ -339,6 +359,7 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
         department: editFormData.department,
         division: editFormData.division,
         employeeType: editFormData.employeeType,
+        role: editFormData.role as any,
         updatedAt: new Date()
       });
 
@@ -549,6 +570,22 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
                   ))}
                 </select>
               </div>
+
+              <div className="form-group">
+                <label htmlFor="role">権限</label>
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role || ''}
+                  onChange={handleFormChange}
+                  disabled={adding}
+                >
+                  <option value="">未選択</option>
+                  {masterData.roles.map(role => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+              </div>
               
               <div className="email-preview">
                 <label>メールアドレス (自動生成)</label>
@@ -663,6 +700,22 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
                   <option value="">未選択</option>
                   {masterData.employeeTypes.map(type => (
                     <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="edit-role">権限</label>
+                <select
+                  id="edit-role"
+                  name="role"
+                  value={editFormData.role || ''}
+                  onChange={handleEditFormChange}
+                  disabled={editing}
+                >
+                  <option value="">未選択</option>
+                  {masterData.roles.map(role => (
+                    <option key={role} value={role}>{role}</option>
                   ))}
                 </select>
               </div>

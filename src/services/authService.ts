@@ -154,9 +154,10 @@ export class AuthService {
     department?: Department;
     division?: Division;
     employeeType?: EmployeeType;
+    role?: string;
   }, originalUser: FirebaseUser): Promise<User> {
     try {
-      const { employeeId, password, name, department, division, employeeType } = registrationData;
+      const { employeeId, password, name, department, division, employeeType, role } = registrationData;
       const email = `${employeeId}@kanri.com`;
       
       // Firebase Authenticationでユーザー作成
@@ -171,6 +172,7 @@ export class AuthService {
         department,
         division,
         employeeType,
+        role: role as any,
         createdAt: new Date(),
         updatedAt: new Date()
       };

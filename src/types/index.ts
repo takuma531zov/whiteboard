@@ -33,6 +33,13 @@ export type EmployeeType =
   | '業務委託'
   | 'インターン';
 
+export type UserRole = 
+  | '管理者' // 全機能アクセス可能
+  | '部長' // 部署内の管理機能
+  | '課長' // 課内の管理機能
+  | '主任' // 限定的な管理機能
+  | 'メンバー'; // 基本機能のみ
+
 // ユーザー関連の型定義
 export interface User {
   id: string; // Firebase Authentication UID
@@ -44,6 +51,7 @@ export interface User {
   department?: Department; // 所属部署
   division?: Division; // 所属課
   employeeType?: EmployeeType; // 従業員区分
+  role?: UserRole; // 権限
   
   createdAt: Date;
   updatedAt: Date;
@@ -138,7 +146,7 @@ export interface ApiResponse<T> {
 // マスターデータ管理用の型定義
 export interface MasterData {
   id: string;
-  type: 'department' | 'division' | 'employeeType';
+  type: 'department' | 'division' | 'employeeType' | 'role';
   value: string;
   order: number; // 表示順序
   isActive: boolean; // 有効/無効フラグ

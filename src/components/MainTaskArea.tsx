@@ -333,19 +333,30 @@ export const MainTaskArea: React.FC<MainTaskAreaProps> = ({
               <div className="assigned-members">
                 <span className="members-label">👥 担当者:</span>
                 <div className="members-list">
-                  {task.assignedUserIds && task.assignedUserIds.length > 0 ? (
-                    task.assignedUserIds.map(userId => {
-                      const user = users.find(u => u.id === userId);
+                  {(() => {
+                    if (!task.assignedUserIds || task.assignedUserIds.length === 0) {
+                      return <span className="no-assignment">未アサイン</span>;
+                    }
+                    
+                    const attendingAssignees = task.assignedUserIds
+                      .filter(userId => {
+                        const user = users.find(u => u.id === userId);
+                        return user?.isAttending; // 出勤者のみ表示
+                      });
+                    
+                    if (attendingAssignees.length === 0) {
+                      return <span className="no-assignment">出勤中の担当者なし</span>;
+                    }
+                    
+                    return attendingAssignees.map(userId => {
                       return (
-                        <span key={userId} className={`member-badge ${user?.isAttending ? 'attending' : 'absent'}`}>
+                        <span key={userId} className="member-badge attending">
                           {getUserName(userId)}
-                          {user?.isAttending ? '🟢' : '🔴'}
+                          🟢
                         </span>
                       );
-                    })
-                  ) : (
-                    <span className="no-assignment">未アサイン</span>
-                  )}
+                    });
+                  })()}
                 </div>
               </div>
 
