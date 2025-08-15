@@ -4,11 +4,6 @@
   "framework": "vite",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "functions": {
-    "functions/src/index.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/(.*)",
