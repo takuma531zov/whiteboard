@@ -455,3 +455,147 @@
     margin-top: 16px;
   }
 }
+
+/* 担当者情報表示スタイル */
+.task-assignee-info {
+  margin: 8px 0;
+  padding: 6px 8px;
+  background: #f8fafc;
+  border-radius: 4px;
+  border-left: 3px solid #e2e8f0;
+  font-size: 12px;
+}
+
+.assignee-warning {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #dc2626;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.warning-icon {
+  font-size: 14px;
+}
+
+.warning-text {
+  font-size: 11px;
+}
+
+.absent-assignees,
+.attending-assignees {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0;
+}
+
+.absent-label {
+  color: #dc2626;
+  font-weight: 500;
+  min-width: 32px;
+}
+
+.absent-names {
+  color: #7f1d1d;
+  background: #fee2e2;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.attending-label {
+  color: #059669;
+  font-weight: 500;
+  min-width: 40px;
+}
+
+.attending-names {
+  color: #064e3b;
+  background: #dcfce7;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+/* 担当者不在タスクの特別なスタイル */
+.task-card .assignee-warning {
+  animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* シンプルな未アサインタスクカード */
+.unassigned-task-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 32px;
+}
+
+.unassigned-task-card:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: translateX(2px);
+}
+
+.unassigned-task-card.absent-assignee {
+  border-left: 3px solid #f59e0b;
+  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+}
+
+.unassigned-task-card.overdue {
+  border-left: 3px solid #dc2626;
+  background: linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);
+}
+
+.unassigned-task-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.absent-indicator,
+.overdue-indicator {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
+.absent-indicator {
+  animation: pulse-warning 2s infinite;
+}
+
+/* ステータス別の色分け */
+.unassigned-task-card.status-todo {
+  border-left-color: #9ca3af;
+}
+
+.unassigned-task-card.status-in_progress {
+  border-left-color: #3b82f6;
+}
+
+.unassigned-task-card.status-completed {
+  border-left-color: #10b981;
+  opacity: 0.7;
+}
+
+.unassigned-task-card.status-resumable {
+  border-left-color: #f59e0b;
+}

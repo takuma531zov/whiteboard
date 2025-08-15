@@ -79,8 +79,8 @@ export const MainTaskArea: React.FC<MainTaskAreaProps> = ({
   /**
    * タスクの色クラス名を取得
    */
-  const getTaskColorClass = (color?: TaskColor) => {
-    if (!color || color === 'default') return '';
+  const getTaskColorClass = (color?: TaskColor | null) => {
+    if (!color || color === 'default' || color === null) return '';
     return `task-color-${color}`;
   };
 

@@ -77,7 +77,7 @@ export interface Task {
   totalWorkTime?: number; // 総作業時間（分）
   
   // 表示設定
-  color?: TaskColor; // タスクの背景色
+  color?: TaskColor | null; // タスクの背景色
 }
 
 // タスクの色

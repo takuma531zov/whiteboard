@@ -323,10 +323,10 @@ export class FirestoreService {
     try {
       const taskRef = doc(db, 'tasks', taskId);
       
-      // undefinedとnullフィールドを除外
+      // undefinedフィールドのみを除外（nullは明示的な値として許可）
       const cleanUpdates: any = {};
       Object.entries(updates).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
+        if (value !== undefined) {
           cleanUpdates[key] = value;
         }
       });

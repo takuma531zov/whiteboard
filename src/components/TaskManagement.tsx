@@ -232,7 +232,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({
         assignedUserIds: editFormData.assignedUserIds.length > 0 ? editFormData.assignedUserIds : undefined,
         dueDate: editFormData.dueDate && editFormData.type === 'weekly' ? new Date(editFormData.dueDate) : undefined,
         weeklyDayOfWeek: editFormData.type === 'weekly' ? editFormData.weeklyDayOfWeek : undefined,
-        color: editFormData.color !== 'default' ? editFormData.color : undefined
+        color: editFormData.color === 'default' ? null : editFormData.color
       };
 
       await FirestoreService.updateTask(editingTask.id, updateData);
@@ -489,8 +489,8 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({
   /**
    * タスクの色クラス名を取得
    */
-  const getTaskColorClass = (color?: TaskColor) => {
-    if (!color || color === 'default') return '';
+  const getTaskColorClass = (color?: TaskColor | null) => {
+    if (!color || color === 'default' || color === null) return '';
     return `task-color-${color}`;
   };
 

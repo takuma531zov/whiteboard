@@ -37,8 +37,8 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
   /**
    * タスクの色クラス名を取得
    */
-  const getTaskColorClass = (color?: TaskColor) => {
-    if (!color || color === 'default') return '';
+  const getTaskColorClass = (color?: TaskColor | null) => {
+    if (!color || color === 'default' || color === null) return '';
     return `task-color-${color}`;
   };
 
@@ -124,12 +124,39 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
   };
 
   /**
-   * 未アサインのタスクを取得
+   * 未アサインのタスクを取得（担当者不在のタスクも含む）
    */
   const getUnassignedTasks = () => {
-    return getCurrentTasks().filter(task =>
-      !task.assignedUserIds || task.assignedUserIds.length === 0
-    );
+    return getCurrentTasks().filter(task => {
+      // 従来の未アサインタスク
+      if (!task.assignedUserIds || task.assignedUserIds.length === 0) {
+        return true;
+      }
+      
+      // 担当者全員が不在（出勤していない）場合も未アサインとして扱う
+      const hasAttendingAssignee = task.assignedUserIds.some(userId => {
+        const user = attendingUsers.find(u => u.id === userId);
+        return user?.isAttending;
+      });
+      
+      return !hasAttendingAssignee; // 出勤中の担当者がいない場合
+    });
+  };
+
+  /**
+   * タスクが担当者不在かどうかを判定（簡易版）
+   */
+  const isAbsentOnlyTask = (task: Task) => {
+    if (!task.assignedUserIds || task.assignedUserIds.length === 0) {
+      return false; // 真の未アサインタスク
+    }
+    
+    // 担当者全員が出勤していない場合
+    const hasAttendingAssignee = task.assignedUserIds.some(userId => {
+      return attendingUsers.some((u: User) => u.id === userId);
+    });
+    
+    return !hasAttendingAssignee;
   };
 
   /**
@@ -322,67 +349,19 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
           </div>
 
           <div className="unassigned-tasks">
-            {getUnassignedTasks().map(task => (
-              <div
-                key={task.id}
-                className={`task-card ${getStatusClass(task.status)} ${isOverdue(task) ? 'overdue' : ''} ${getTaskColorClass(task.color)}`}
-                draggable
-                onDragStart={(e) => handleDragStart(e, task)}
-              >
-                <div className="task-card-header">
-                  <h4 className="task-title">{task.title}</h4>
-                  <div className="task-meta">
-                    <span className={`task-status ${getStatusClass(task.status)}`}>
-                      {getStatusText(task.status)}
-                    </span>
-                    {isOverdue(task) && (
-                      <span className="overdue-badge">期限切れ</span>
-                    )}
-                  </div>
+            {getUnassignedTasks().slice(0, 20).map(task => {
+              return (
+                <div
+                  key={task.id}
+                  className={`unassigned-task-card ${getStatusClass(task.status)} ${getTaskColorClass(task.color)}`}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, task)}
+                  title={`${task.title}${task.description ? ` - ${task.description}` : ''}`}
+                >
+                  <span className="unassigned-task-title">{task.title}</span>
                 </div>
-
-                {task.description && (
-                  <p className="task-description">{task.description}</p>
-                )}
-
-                {task.type === 'weekly' && (
-                  <div className="task-due-date">
-                    {task.weeklyDayOfWeek ? (
-                      `毎週${getDayOfWeekLabel(task.weeklyDayOfWeek)}`
-                    ) : task.dueDate ? (
-                      `期限: ${task.dueDate.toLocaleDateString('ja-JP')}`
-                    ) : null}
-                  </div>
-                )}
-
-                <div className="task-actions">
-                  {task.status === 'todo' && (
-                    <button
-                      onClick={() => onUpdateTaskStatus(task.id, 'in_progress')}
-                      className="task-action-btn start-btn"
-                    >
-                      開始
-                    </button>
-                  )}
-                  {task.status === 'in_progress' && (
-                    <button
-                      onClick={() => onUpdateTaskStatus(task.id, 'completed')}
-                      className="task-action-btn complete-btn"
-                    >
-                      完了
-                    </button>
-                  )}
-                  {task.status === 'completed' && (
-                    <button
-                      onClick={() => onUpdateTaskStatus(task.id, 'todo')}
-                      className="task-action-btn reopen-btn"
-                    >
-                      再開
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
             {getUnassignedTasks().length === 0 && (
               <div className="no-unassigned-tasks">
