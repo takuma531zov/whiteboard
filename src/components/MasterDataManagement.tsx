@@ -9,18 +9,19 @@ interface MasterDataManagementProps {
 }
 
 // タブの型定義
-type TabType = 'department' | 'division' | 'employeeType';
+type TabType = 'department' | 'division' | 'employeeType' | 'role';
 
 // タブの表示名
 const TAB_LABELS: Record<TabType, string> = {
   department: '所属部署',
   division: '所属課', 
-  employeeType: '従業員区分'
+  employeeType: '従業員区分',
+  role: '権限'
 };
 
 /**
  * マスターデータ管理画面コンポーネント
- * 所属部署、所属課、従業員区分のプルダウン選択肢を管理
+ * 所属部署、所属課、従業員区分、権限のプルダウン選択肢を管理
  */
 export const MasterDataManagement: React.FC<MasterDataManagementProps> = () => {
   // 状態管理
@@ -28,7 +29,8 @@ export const MasterDataManagement: React.FC<MasterDataManagementProps> = () => {
   const [masterData, setMasterData] = useState<Record<TabType, MasterData[]>>({
     department: [],
     division: [],
-    employeeType: []
+    employeeType: [],
+    role: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -49,7 +51,7 @@ export const MasterDataManagement: React.FC<MasterDataManagementProps> = () => {
   const loadMasterData = async (type?: TabType) => {
     try {
       setLoading(true);
-      const typesToLoad = type ? [type] : (['department', 'division', 'employeeType'] as TabType[]);
+      const typesToLoad = type ? [type] : (['department', 'division', 'employeeType', 'role'] as TabType[]);
       
       console.log('マスターデータ読み込み開始:', typesToLoad);
       

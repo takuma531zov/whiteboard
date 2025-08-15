@@ -37,9 +37,7 @@ const DEFAULT_EMPLOYEE_TYPES: EmployeeType[] = [
   '派遣社員', '業務委託', 'インターン'
 ];
 
-const DEFAULT_ROLES: string[] = [
-  '管理者', '部長', '課長', '主任', 'メンバー'
-];
+// 権限はマスターデータ管理で管理するため、デフォルト値は不要
 
 /**
  * メンバー管理画面コンポーネント
@@ -65,7 +63,7 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
     departments: DEFAULT_DEPARTMENTS,
     divisions: DEFAULT_DIVISIONS,
     employeeTypes: DEFAULT_EMPLOYEE_TYPES,
-    roles: DEFAULT_ROLES
+    roles: []
   });
   
   // メンバー追加関連の状態
@@ -140,7 +138,7 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({
           : DEFAULT_EMPLOYEE_TYPES,
         roles: roles.length > 0 
           ? roles.map((d: MasterData) => d.value)
-          : DEFAULT_ROLES
+          : []
       });
     } catch (err: any) {
       console.error('マスターデータ取得エラー:', err);
