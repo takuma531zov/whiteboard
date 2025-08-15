@@ -333,7 +333,7 @@ export const WhiteboardArea: React.FC<WhiteboardAreaProps> = ({
           </div>
 
           <div className="unassigned-tasks">
-            {getUnassignedTasks().slice(0, 20).map(task => {
+            {getUnassignedTasks().map(task => {
               return (
                 <div
                   key={task.id}
