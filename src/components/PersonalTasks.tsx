@@ -42,9 +42,12 @@ export const PersonalTasks: React.FC<PersonalTasksProps> = ({
     
     // 優先度と作成日でソート
     return filtered.sort((a, b) => {
-      if (a.isPriority !== b.isPriority) {
-        return a.isPriority ? -1 : 1;
+      const priorityA = a.isPriority === true ? 1 : 0;
+      const priorityB = b.isPriority === true ? 1 : 0;
+      if (priorityA !== priorityB) {
+        return priorityB - priorityA; // 1(true) の方が先に来るように降順ソート
       }
+      // 優先度が同じ場合は作成日の降順（新しいものが上）
       return b.createdAt.getTime() - a.createdAt.getTime();
     });
   };
