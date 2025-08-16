@@ -352,11 +352,7 @@ export class FirestoreService {
       }
       
       
-      console.log('Firestore更新データ:', updateData);
-      
       await updateDoc(taskRef, updateData);
-      
-      console.log('Firestore更新完了:', taskId);
       
     } catch (error) {
       console.error('タスク更新エラー:', error);
@@ -504,6 +500,7 @@ export class FirestoreService {
       description: data.description,
       type: data.type,
       status: data.status,
+      isPriority: data.isPriority, // 追加
       assignedUserIds: data.assignedUserIds || (data.assignedUserId ? [data.assignedUserId] : []),
       createdBy: data.createdBy,
       dueDate: data.dueDate?.toDate(),

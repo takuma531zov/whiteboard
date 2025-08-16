@@ -56,7 +56,8 @@ function App() {
         
         // Subscribe to new user's tasks
         unsubscribeTasks = FirestoreService.subscribeToTasks((updatedTasks) => {
-          setAllTasks(updatedTasks);
+          console.log('[App.tsx] subscribeToTasks received updated tasks. Count:', updatedTasks.length);
+          setAllTasks([...updatedTasks]);
         });
       } else {
         // ログアウト状態
